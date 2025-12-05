@@ -30,8 +30,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         [InlineKeyboardButton("شروع 🚀", callback_data="start_now")],
-        [InlineKeyboardButton("راهنما ℹ️", callback_data="help"),
-         InlineKeyboardButton("درباره من 👤", callback_data="about")]
+        [
+            InlineKeyboardButton("راهنما ℹ️", callback_data="help"),
+            InlineKeyboardButton("درباره من 👤", callback_data="about")
+        ],
+        [InlineKeyboardButton("خدافظ 👋", callback_data="goodbye")]  # ✅ دکمه جدید
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -42,7 +45,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📖 راهنما:\n"
         "/start — نمایش منوی اصلی\n"
         "/help — نمایش این راهنما\n"
-        "/about — اطلاعات درباره ربات\n\n"
+        "/about — اطلاعات درباره ربات\n"
+        "«خدافظ» — خداحافظی دوستانه!\n\n"
         "همچنین می‌تونی فقط 'سلام' بفرستی! 😉"
     )
 
@@ -50,7 +54,7 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🤖 این ربات با عشق و کدنویسی پایتون ساخته شده!\n"
         "نسخه: 1.0\n"
-        "ساخته‌شده توسط شما ❤️"
+        "ساخته‌شده توسط alitavv ❤️"  # ✅ تغییر اعمال شد
     )
 
 # ====================
@@ -65,12 +69,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("🔥 عالی! حالا می‌تونیم کار کنیم!\n\nدستورات رو امتحان کن یا فقط یه متن بفرست.")
     elif query.data == "help":
         await query.edit_message_text(
-            "📖 راهنما:\n/start — منوی اصلی\n/help — این صفحه\n/about — درباره ما"
+            "📖 راهنما:\n/start — منوی اصلی\n/help — این صفحه\n/about — درباره ما\n«خدافظ» — خداحافظی دوستانه!"
         )
     elif query.data == "about":
         await query.edit_message_text(
-            "🤖 ربات هوشمند\nنسخه: 1.0\nساخته‌شده با Python + Telegram Bot API"
+            "🤖 ربات هوشمند\nنسخه: 1.0\nساخته‌شده توسط alitavv ❤️"  # ✅ اینجا هم اصلاح شد
         )
+    elif query.data == "goodbye":  # ✅ هندلر جدید برای خدافظ
+        await query.edit_message_text("خداحافظ! حتماً دوباره بیا 👋\nمن همیشه اینجام تا دوباره بیایی 💙")
 
 # ====================
 # هندلر پیام‌های متنی
@@ -85,6 +91,8 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("عالیم! ممنون که پرسیدی 😊")
     elif "مرسی" in text or "تشکر" in text:
         await update.message.reply_text("خواهش می‌کنم! همیشه اینجام 🤗")
+    elif "خدافظ" in text or "خداحافظ" in text or "بای" in text:
+        await update.message.reply_text("خداحافظ! حتماً دوباره بیا 👋\nمن همیشه اینجام 💙")
     else:
         await update.message.reply_text("متاسفانه متوجه نشدم! 🤔\nمی‌تونی از دستورات استفاده کنی یا فقط 'سلام' بفرستی.")
 
