@@ -18,43 +18,50 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ====================
-# هندلرهای دستورات
+# منوی اصلی
 # ====================
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """دستور /start — نمایش منوی اینلاین"""
-    welcome_text = (
-        "🌟 سلام! من ربات هوشمند شما هستم!\n\n"
-        "از دکمه‌های زیر استفاده کن تا شروع کنیم 👇"
-    )
-    
+def get_main_menu():
     keyboard = [
         [InlineKeyboardButton("شروع 🚀", callback_data="start_now")],
         [
             InlineKeyboardButton("راهنما ℹ️", callback_data="help"),
             InlineKeyboardButton("درباره من 👤", callback_data="about")
         ],
-        [InlineKeyboardButton("خدافظ 👋", callback_data="goodbye")]  # ✅ دکمه جدید
+        [InlineKeyboardButton("خدافظ 👋", callback_data="goodbye")]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(welcome_text, reply_markup=reply_markup)
+    return InlineKeyboardMarkup(keyboard)
+
+# ====================
+# منوی با دکمه برگشت
+# ====================
+
+def get_back_menu(callback_data="main_menu"):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("برگشت ↩️", callback_data=callback_data)]
+    ])
+
+# ====================
+# هندلرهای دستورات
+# ====================
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    welcome_text = (
+        "🌟 سلام! من ربات هوشمند شما هستم!\n\n"
+        "از دکمه‌های زیر استفاده کن تا شروع کنیم 👇"
+    )
+    await update.message.reply_text(welcome_text, reply_markup=get_main_menu())
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "📖 راهنما:\n"
-        "/start — نمایش منوی اصلی\n"
-        "/help — نمایش این راهنما\n"
-        "/about — اطلاعات درباره ربات\n"
-        "«خدافظ» — خداحافظی دوستانه!\n\n"
-        "همچنین می‌تونی فقط 'سلام' بفرستی! 😉"
+        "📖 راهنما:\n/start — نمایش منوی اصلی\n/help — نمایش این راهنما\n/about — اطلاعات درباره ربات\n«خدافظ» — خداحافظی دوستانه!",
+        reply_markup=get_back_menu()
     )
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 این ربات با عشق و کدنویسی پایتون ساخته شده!\n"
-        "نسخه: 1.0\n"
-        "ساخته‌شده توسط alitavv ❤️"  # ✅ تغییر اعمال شد
+        "🤖 ربات هوشمند\nنسخه: 1.0\nساخته‌شده توسط alitavv ❤️",
+        reply_markup=get_back_menu()
     )
 
 # ====================
@@ -65,17 +72,32 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if query.data == "start_now":
-        await query.edit_message_text("🔥 عالی! حالا می‌تونیم کار کنیم!\n\nدستورات رو امتحان کن یا فقط یه متن بفرست.")
+    if query.data == "main_menu":
+        welcome_text = (
+            "🌟 سلام! من ربات هوشمند شما هستم!\n\n"
+            "از دکمه‌های زیر استفاده کن تا شروع کنیم 👇"
+        )
+        await query.edit_message_text(text=welcome_text, reply_markup=get_main_menu())
+
+    elif query.data == "start_now":
+        await query.edit_message_text(
+            "🔥 عالی! حالا می‌تونیم کار کنیم!\n\nدستورات رو امتحان کن یا فقط یه متن بفرست.",
+            reply_markup=get_back_menu()
+        )
+
     elif query.data == "help":
         await query.edit_message_text(
-            "📖 راهنما:\n/start — منوی اصلی\n/help — این صفحه\n/about — درباره ما\n«خدافظ» — خداحافظی دوستانه!"
+            "📖 راهنما:\n/start — منوی اصلی\n/help — این صفحه\n/about — درباره ما\n«خدافظ» — خداحافظی دوستانه!",
+            reply_markup=get_back_menu()
         )
+
     elif query.data == "about":
         await query.edit_message_text(
-            "🤖 ربات هوشمند\nنسخه: 1.0\nساخته‌شده توسط alitavv ❤️"  # ✅ اینجا هم اصلاح شد
+            "🤖 ربات هوشمند\nنسخه: 1.0\nساخته‌شده توسط alitavv ❤️",
+            reply_markup=get_back_menu()
         )
-    elif query.data == "goodbye":  # ✅ هندلر جدید برای خدافظ
+
+    elif query.data == "goodbye":
         await query.edit_message_text("خداحافظ! حتماً دوباره بیا 👋\nمن همیشه اینجام تا دوباره بیایی 💙")
 
 # ====================
@@ -108,31 +130,26 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
 # ====================
 
 def main():
-    # خواندن توکن از متغیر محیطی (برای امنیت)
     TOKEN = os.environ.get("BOT_TOKEN")
     if not TOKEN:
         raise ValueError("❌ متغیر محیطی BOT_TOKEN تنظیم نشده!")
 
     app = Application.builder().token(TOKEN).build()
 
-    # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("about", about))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
 
-    # هندلر خطا
     app.add_error_handler(error_handler)
 
     print("✅ ربات در حال راه‌اندازی است...")
     
-    # برای Railway/Render (webhook) و یا تست محلی (polling)
     PORT = int(os.environ.get("PORT", 8000))
     WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
     
     if WEBHOOK_URL:
-        # اجرا به صورت webhook (برای سرور)
         app.run_webhook(
             listen="0.0.0.0",
             port=PORT,
@@ -140,7 +157,6 @@ def main():
             webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
         )
     else:
-        # اجرا به صورت polling (برای تست محلی)
         app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
